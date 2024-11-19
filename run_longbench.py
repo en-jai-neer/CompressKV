@@ -80,7 +80,7 @@ model2maxlen = {
     "mistral": 31500
 }
 
-
+cache_dir = ""
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -221,7 +221,9 @@ def main(args):
                 window_sizes = 8
             elif args.method.lower() in ["streamingllm"]:
                 window_sizes = max_capacity_prompts - 4
-
+            elif args.method.lower() in ["compress"]:
+                window_sizes = max_capacity_prompts - 4
+            
             kernel_sizes = 7
             pooling = "maxpool"
 
@@ -330,8 +332,10 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(
         args.model_path,
+        use_auth_token='',
         use_fast=args.use_fast_tokenizer,
-        padding_side="left"
+        padding_side="left",
+        cache_dir=cache_dir
     )
 
 
@@ -341,11 +345,13 @@ if __name__ == "__main__":
     
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
+        use_auth_token='',
         torch_dtype=torch.float16,
         low_cpu_mem_usage=True,
         device_map="auto",
         use_cache=args.use_cache,
-        attn_implementation=args.attn_implementation
+        attn_implementation=args.attn_implementation,
+        cache_dir=cache_dir
     )
     
 

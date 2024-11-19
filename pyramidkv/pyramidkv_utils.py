@@ -484,17 +484,17 @@ def init_Compress(self):
 class CompressKVCluster():
     def __init__(self, window_size = 64, max_capacity_prompt = 256 + 64, kernel_size = 5, pooling = 'avgpool'):
         self.sink_tokens = 4
-        self.context_tokens = 64
+        self.context_tokens = 32
         self.max_capacity_prompt = max_capacity_prompt
-        self.compression_tokens = max_capacity_prompt - self.compression_tokens - self.sink_tokens
-        assert self.max_capacity_prompt - self.window_size - self.sink_tokens > 0
+        self.compression_tokens = max_capacity_prompt - self.context_tokens - self.sink_tokens
+        assert self.max_capacity_prompt - self.context_tokens - self.sink_tokens > 0
 
     def reset(self, window_size = 64, max_capacity_prompt = 256 + 64, kernel_size = 5, pooling = 'avgpool'):
         self.sink_tokens = 4
-        self.context_tokens = 64
+        self.context_tokens = 32
         self.max_capacity_prompt = max_capacity_prompt
         self.compression_tokens = max_capacity_prompt - self.compression_tokens - self.sink_tokens
-        assert self.max_capacity_prompt - self.window_size > 0
+        # assert self.max_capacity_prompt - self.window_size > 0
 
     @staticmethod
     def slice2d(x, start, end):
@@ -528,7 +528,7 @@ class CompressKVCluster():
             return key_states, value_states
         else: 
             threshold = self.max_capacity_prompt - self.sink_tokens - self.context_tokens
-            seq_len = q_len.size(2)
+            seq_len = key_states.size(2)
             k_sink = key_states[:, :, :self.sink_tokens, :]
             k_compress = key_states[:, :, self.sink_tokens : -self.context_tokens, :]
             k_compress = self.compress2d_loop(k_compress, self.sink_tokens, seq_len - self.context_tokens, threshold)
